@@ -21,7 +21,9 @@ If anyone wants to adapt this to a web-based project with a friendly UI please p
 
 <img src="https://raw.githubusercontent.com/tombetthauser/protest_signmaker/master/project_files/demo.gif">
 
-Processing an existing protest sign image (artist unknown) to a set of printable images for a new 33x24 inch sign.
+Processing an existing protest sign image to a set of printable images for a new 33x24 inch sign.
+
+Original image from June 1st protest in Amherst, MA 2020.
 
 ***
 
