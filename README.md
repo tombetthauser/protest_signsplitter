@@ -5,6 +5,10 @@ The user provides a jpeg or png, designates the size of their sign surface (card
 
 Built for Mac and Linux systems using the ffmpeg tool and basic shell script.
 
+
+Download the tool here --> [download](tombetthauser.com/dev/assets/protest_signmaker.zip)
+
+
 ## Works but still needs work...
 
 This was originally built as a personal studio tool for up-scaling sketches into transfers larger work
@@ -22,7 +26,7 @@ Processing an existing protest sign image (artist unknown) to a set of printable
 ***
 
 # How to use the tool on MacOS...
-1) Download the zip file version of the project.
+1) Download the zip file version of the project here --> [download](tombetthauser.com/dev/assets/protest_signmaker.zip)
 2) Double click the zip file to unzip it.
 3) Open your Terminal application...
 ```
