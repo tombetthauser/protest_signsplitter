@@ -45,14 +45,16 @@ bash ~/Downloads/protest_signmaker/sign_maker.sh
 11) If it works a new folder should appear in the project folder with a bunch of printable images in it!
 ***
 # If you want to improve the project... 
-These are some ideas for where I was planning to take the project if / when I have some free time for it...
+
+### Some ideas for where I was planning to take the project.
+
 1) Maybe create a Python + TkInter desktop GUI and make the script a clickable '.command' file.
 2) Maybe transition the whole project to Python and build a web-interface for it with Django.
 3) Definitely want to tweak the math so that all output images are 8.5x11 with smaller remainder images in extra row and column on the bottom and right sides.
 4) Definitely need to make a horizontal / vertical option.
 5) Maybe create an outline image mode if possible in ffmpeg for paint-by-numbers style prints.
 
-If you know how to use GitHub / Git feel free to fork the project and make pull requests.
+### If you know how to use GitHub / Git feel free to fork the project and make pull requests!
 
 If you want to make a completely new / improved version of the project please appropriate any code freely, I'd love to use a more friendly / clean version of this myself and wish I had time to build it!
 
