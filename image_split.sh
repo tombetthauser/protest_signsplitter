@@ -137,8 +137,14 @@ print_gridX()
   then
     count=$count
   else
-    count=`expr $count + 1`
+    count=`expr $count + 0`
   fi
+
+  if [ $count = 0 ]
+  then
+    count=1
+  fi
+
   echo $count
 }
 
@@ -157,8 +163,14 @@ print_gridY()
   then
     count=$count
   else
-    count=`expr $count + 1`
+    count=`expr $count + 0`
   fi
+
+  if [ $count = 0 ]
+  then
+    count=1
+  fi
+
   echo $count
 }
 
@@ -179,7 +191,7 @@ read sign_width
 printf "\n\nWould you like to make your image black and white? (yes / no)"
 read black_white
 
-grid_height=$(print_gridX $sign_width)
-grid_width=$(print_gridY $sign_width)
+grid_width=$(print_gridX $sign_width)
+grid_height=$(print_gridY $sign_height)
 
 split_image $file_name $grid_width $grid_height $file_type $black_white
