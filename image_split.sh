@@ -1,14 +1,43 @@
 get_height()
 {
-  file_info=$(file $1)
+  jpg="jpg"
+  if [ "$2" = "$jpg" ]
+  then
+    # for jpgs
+    file_info=$(file $1)
+    IFS=' '
+    read -ra ARR1 <<< "$file_info"
+    IFS='x'
+    read -ra ARR2 <<< "${ARR1[17]}"
+    IFS=','
+    read -ra ARR3 <<< "${ARR2[1]}"
+    echo ${ARR3[0]}
+  else
+    # for png
+    file_info=$(file $1)
+    IFS=','
+    read -ra ARR1 <<< "$file_info"
+    IFS=' '
+    read -ra ARR2 <<< "${ARR1[1]}"
+    echo ${ARR2[2]}
+  fi
 
-  IFS=','
-  read -ra ARR1 <<< "$file_info"
-
-  IFS=' '
-  read -ra ARR2 <<< "${ARR1[1]}"
-
-  echo ${ARR2[2]}
+  # file_info=$(file "statue.jpg")
+  # IFS=' '
+  # read -ra ARR1 <<< "$file_info"
+  # IFS='x'
+  # read -ra ARR2 <<< "${ARR1[17]}"
+  # IFS=','
+  # read -ra ARR3 <<< "${ARR2[1]}"
+  # echo ${ARR3[0]}
+  
+  # for png
+  # file_info=$(file $1)
+  # IFS=','
+  # read -ra ARR1 <<< "$file_info"
+  # IFS=' '
+  # read -ra ARR2 <<< "${ARR1[1]}"
+  # echo ${ARR2[2]}
 
   # let a=$width-50
   # echo $a
@@ -20,21 +49,31 @@ get_height()
 
 get_width()
 {
-  file_info=$(file $1)
-
-  IFS=','
-  read -ra ARR1 <<< "$file_info"
-
-  IFS=' '
-  read -ra ARR2 <<< "${ARR1[1]}"
-
-  echo ${ARR2[0]}
+  jpg="jpg"
+  if [ "$2" = "$jpg" ]
+  then
+    # for jpgs
+    file_info=$(file $1)
+    IFS=' '
+    read -ra ARR1 <<< "$file_info"
+    IFS='x'
+    read -ra ARR2 <<< "${ARR1[17]}"
+    echo ${ARR2[0]}
+  else
+  # # for pngs
+    file_info=$(file $1)
+    IFS=','
+    read -ra ARR1 <<< "$file_info"
+    IFS=' '
+    read -ra ARR2 <<< "${ARR1[1]}"
+    echo ${ARR2[0]}
+  fi
 }
 
 split_image()
 {
-  width=$(get_width $1)
-  height=$(get_height $1)
+  width=$(get_width $1 $4)
+  height=$(get_height $1 $4)
 
   grid_width=$2
   grid_height=$3
@@ -58,7 +97,9 @@ split_image()
   # fi
   
   # rm -rf print_files
-  mkdir print_files
+
+  epoch=$(date +%s)
+  mkdir "printfiles~$epoch"
   
   #iterate through grid_height
   for x in $(seq 0 $x_breaks)
@@ -67,7 +108,7 @@ split_image()
     do
       y_coord=$y*$height_inc
       x_coord=$x*$width_inc
-      ffmpeg -i $1 -filter:v "crop=$width_inc:$height_inc:$x_coord:$y_coord" "print_files/$y~$x~$1"
+      ffmpeg -i $1 -filter:v "crop=$width_inc:$height_inc:$x_coord:$y_coord" "printfiles~$epoch/$y~$x~$1"
     done
   done
 
@@ -78,23 +119,6 @@ split_image()
 
   # ffmpeg -i $1 -filter:v "crop=$width_inc:$height_inc:0:$height_inc" "print_files/bottomleft_$1"
   # ffmpeg -i $1 -filter:v "crop=$width_inc:$height_inc:$width_inc:$height_inc" "print_files/bottomright_$1"
-}
-
-quad_image()
-{
-  width=$(get_width $1)
-  height=$(get_height $1)
-  half_width=$width/2
-  half_height=$height/2
-  half_height
-  # ffmpeg -i $1 -filter:v "crop=out_w:out_h:x:y" "copy_$1"
-
-  mkdir print_files
-
-  ffmpeg -i $1 -filter:v "crop=$half_width:$half_height:0:0" "print_files/topleft_$1"
-  ffmpeg -i $1 -filter:v "crop=$half_width:$half_height:$half_width:0" "print_files/topright_$1"
-  ffmpeg -i $1 -filter:v "crop=$half_width:$half_height:0:$half_height" "print_files/bottomleft_$1"
-  ffmpeg -i $1 -filter:v "crop=$half_width:$half_height:$half_width:$half_height" "print_files/bottomright_$1"
 }
 
 print_gridX()
@@ -133,6 +157,9 @@ print_gridY()
 
 clear
 
+printf "\n\nIs your image a png or jpg file? (enter 'jpg' or 'png'): "
+read file_type
+
 printf "\n\nEnter image file in current folder to process (with file extension): "
 read file_name
 
@@ -145,8 +172,4 @@ read sign_width
 grid_height=$(print_gridX $sign_width)
 grid_width=$(print_gridY $sign_width)
 
-# quad_image $file_name
-split_image $file_name $grid_width $grid_height
-
-# echo $(get_height $file_name)
-# echo $(get_width $file_name)
+split_image $file_name $grid_width $grid_height $file_type
