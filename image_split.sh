@@ -108,7 +108,14 @@ split_image()
     do
       y_coord=$y*$height_inc
       x_coord=$x*$width_inc
-      ffmpeg -i $1 -filter:v "crop=$width_inc:$height_inc:$x_coord:$y_coord" "printfiles~$epoch/$y~$x~$1"
+
+      yes="yes"
+      if [ "$5" = "$yes" ]
+      then
+        ffmpeg -i $1 -filter:v "crop=$width_inc:$height_inc:$x_coord:$y_coord,hue=s=0" "printfiles~$epoch/$y~$x~$1"
+      else
+        ffmpeg -i $1 -filter:v "crop=$width_inc:$height_inc:$x_coord:$y_coord" "printfiles~$epoch/$y~$x~$1"
+      fi
     done
   done
 
@@ -169,7 +176,10 @@ read sign_height
 printf "\n\nEnter width of sign surface in inches rounding down to the nearest inch: "
 read sign_width
 
+printf "\n\nWould you like to make your image black and white? (yes / no)"
+read black_white
+
 grid_height=$(print_gridX $sign_width)
 grid_width=$(print_gridY $sign_width)
 
-split_image $file_name $grid_width $grid_height $file_type
+split_image $file_name $grid_width $grid_height $file_type $black_white
