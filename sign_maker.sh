@@ -13,13 +13,16 @@ usage()
 
 split_image()
 {
-  local metadata=$(ffprobe -v quiet -show_streams "$1")
+  local metadata
+  metadata=$(ffprobe -v quiet -show_streams "$1")
   local grid_width="$2"
   local grid_height="$3"
   local color="$4"
 
-  local width=$(echo "$metadata" | awk -F "=" '/width/ {print $2;exit;}')
-  local height=$(echo "$metadata" | awk -F "=" '/height/ {print $2;exit;}')
+  local width
+  width=$(echo "$metadata" | awk -F "=" '/width/ {print $2;exit;}')
+  local height
+  height=$(echo "$metadata" | awk -F "=" '/height/ {print $2;exit;}')
 
   local outdir="${1%%.*}_printfiles"
   rm -rf "$outdir" && mkdir -p "$outdir"
@@ -61,7 +64,7 @@ if [[ "$1" == "-c" ]] || [[ "$1" == "--color" ]]; then
 fi
 
 filename="$1"
-grid_w=$(max $(quotient $2 $SHEET_WIDTH) 1)
-grid_h=$(max $(quotient $3 $SHEET_HEIGHT) 1)
+grid_w=$(max "$(quotient "$2" "$SHEET_WIDTH")" 1)
+grid_h=$(max "$(quotient "$3" "$SHEET_HEIGHT")" 1)
 
 split_image "$filename" "$grid_w" "$grid_h" "$color"
