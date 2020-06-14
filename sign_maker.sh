@@ -1,123 +1,67 @@
-get_height()
-{
-  jpg="jpg"
-  if [ "$2" = "$jpg" ]
-  then
-    file_info=$(file $1)
-    IFS=' '
-    read -ra ARR1 <<< "$file_info"
-    IFS='x'
-    read -ra ARR2 <<< "${ARR1[17]}"
-    IFS=','
-    read -ra ARR3 <<< "${ARR2[1]}"
-    echo ${ARR3[0]}
-  else
-    file_info=$(file $1)
-    IFS=','
-    read -ra ARR1 <<< "$file_info"
-    IFS=' '
-    read -ra ARR2 <<< "${ARR1[1]}"
-    echo ${ARR2[2]}
-  fi
-}
+#!/bin/bash
+set -euo pipefail
 
-get_width()
+# paper dimensions
+SHEET_WIDTH=8.5
+SHEET_HEIGHT=11
+
+usage()
 {
-  jpg="jpg"
-  if [ "$2" = "$jpg" ]
-  then
-    file_info=$(file $1)
-    IFS=' '
-    read -ra ARR1 <<< "$file_info"
-    IFS='x'
-    read -ra ARR2 <<< "${ARR1[17]}"
-    echo ${ARR2[0]}
-  else
-    file_info=$(file $1)
-    IFS=','
-    read -ra ARR1 <<< "$file_info"
-    IFS=' '
-    read -ra ARR2 <<< "${ARR1[1]}"
-    echo ${ARR2[0]}
-  fi
+  echo "Usage: sign_maker.sh [-c|--color] filename sheets-wide sheets-high"
+  exit 2
 }
 
 split_image()
 {
-  width=$(get_width $1 $4)
-  height=$(get_height $1 $4)
+  local metadata=$(ffprobe -v quiet -show_streams "$1")
+  local grid_width="$2"
+  local grid_height="$3"
+  local color="$4"
 
-  grid_width=$2
-  grid_height=$3
+  local width=$(echo "$metadata" | awk -F "=" '/width/ {print $2;exit;}')
+  local height=$(echo "$metadata" | awk -F "=" '/height/ {print $2;exit;}')
 
-  x_breaks=`expr $2 - 1`
-  y_breaks=`expr $3 - 1`
-  
-  printf "\ngrid width: $grid_width\n"
-  printf "grid height: $grid_height\n"
+  local outdir="${1%%.*}_printfiles"
+  rm -rf "$outdir" && mkdir -p "$outdir"
 
-  width_inc=$width/$grid_width
-  height_inc=$height/$grid_height
+  local width_inc=$((width / grid_width))
+  local height_inc=$((height / grid_height))
 
-  epoch=$(date +%s)
-  mkdir "printfiles~$epoch"
-  
-  for x in $(seq 0 $x_breaks)
-  do 
-    for y in $(seq 0 $y_breaks)
-    do
-      y_coord=$y*$height_inc
-      x_coord=$x*$width_inc
-
-      yes="yes"
-      if [ "$5" = "$yes" ]
-      then
-        ffmpeg -i $1 -filter:v "crop=$width_inc:$height_inc:$x_coord:$y_coord,hue=s=0,eq=gamma=0.5:saturation=2,curves=all='0/0 0.5/1 1/1'" "printfiles~$epoch/$y~$x~$1"
-      else
-        ffmpeg -i $1 -filter:v "crop=$width_inc:$height_inc:$x_coord:$y_coord" "printfiles~$epoch/$y~$x~$1"
+  for x in $(seq 0 $((grid_width - 1))); do 
+    for y in $(seq 0 $((grid_height - 1))); do
+      local y_coord=$((y * height_inc))
+      local x_coord=$((x * width_inc))
+      local filter_args="crop=$width_inc:$height_inc:$x_coord:$y_coord"
+      if [[ "$color" != "true" ]]; then
+        filter_args+=",hue=s=0,eq=gamma=0.5:saturation=2,curves=all='0/0 0.5/1 1/1'"
       fi
+        ffmpeg -loglevel error -i "$1" -filter:v "$filter_args" "${outdir}/$y~$x~$1" &
     done
   done
 }
 
-print_gridX()
+max()
 {
-  count=`expr $1 / 8`
-  if [ $count = 0 ]
-  then
-    count=1
-  fi
-  echo $count
+  echo $(($1 > $2 ? $1 : $2))
 }
 
-print_gridY()
+quotient()
 {
-  count=`expr $1 / 11`
-  if [ $count = 0 ]
-  then
-    count=1
-  fi
-  echo $count
+  bc -l <<< "scale=0; $1 / $2"
 }
 
-clear
+if [[ $# -ne 3 ]] && [[ $# -ne 4 ]]; then
+  usage
+fi
 
-printf "\n\nIs your image a png or jpg file? (enter 'jpg' or 'png'): "
-read file_type
+color="false"
+if [[ "$1" == "-c" ]] || [[ "$1" == "--color" ]]; then
+  color="true"
+  shift
+fi
 
-printf "\n\nEnter image file in current folder to process (with file extension): "
-read file_name
+filename="$1"
+grid_w=$(max $(quotient $2 $SHEET_WIDTH) 1)
+grid_h=$(max $(quotient $3 $SHEET_HEIGHT) 1)
 
-printf "\n\nEnter height of sign surface in inches rounding down to the nearest inch: "
-read sign_height
-
-printf "\n\nEnter width of sign surface in inches rounding down to the nearest inch: "
-read sign_width
-
-printf "\n\nWould you like to make your image black and white? (yes / no)"
-read black_white
-
-grid_width=$(print_gridX $sign_width)
-grid_height=$(print_gridY $sign_height)
-
-split_image $file_name $grid_width $grid_height $file_type $black_white
+split_image "$filename" "$grid_w" "$grid_h" "$color"
