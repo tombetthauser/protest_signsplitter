@@ -7,7 +7,7 @@ SHEET_HEIGHT=11
 
 usage()
 {
-  echo "Usage: sign_maker.sh [-c|--color] filename sheets-wide sheets-high"
+  echo "Usage: sign_maker.sh [-c|--color] filename width height"
   exit 2
 }
 
@@ -41,6 +41,8 @@ split_image()
         ffmpeg -loglevel error -i "$1" -filter:v "$filter_args" "${outdir}/$y~$x~$1" &
     done
   done
+
+  wait
 }
 
 max()
@@ -58,9 +60,13 @@ if [[ $# -ne 3 ]] && [[ $# -ne 4 ]]; then
 fi
 
 color="false"
-if [[ "$1" == "-c" ]] || [[ "$1" == "--color" ]]; then
-  color="true"
-  shift
+if [[ $# -eq 4 ]]; then
+  if [[ "$1" == "-c" ]] || [[ "$1" == "--color" ]]; then
+    color="true"
+    shift
+  else
+    usage
+  fi
 fi
 
 filename="$1"
