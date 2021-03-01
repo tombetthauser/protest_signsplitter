@@ -1,4 +1,4 @@
-# Protest Sign-Maker
+# Protest Sign-Splitter
 A tool for making enlarged printable versions of protest signs from pre-existing images or screenshots. 
 
 The user provides a jpeg or png, designates the size of their sign surface (cardboard etc) and it outputs a new set of split images that can be printed out and re-assembled on the sign.
